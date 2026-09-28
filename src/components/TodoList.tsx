@@ -1,5 +1,5 @@
+import { Todo } from "@/types";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
-import type { Todo } from "../types";
 import { TodoItem } from "./TodoItem";
 
 interface TodoListProps {
@@ -22,7 +22,7 @@ export function TodoList({
   return (
     <FlatList
       data={todos}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item._id}
       renderItem={({ item }) => (
         <TodoItem
           todo={item}

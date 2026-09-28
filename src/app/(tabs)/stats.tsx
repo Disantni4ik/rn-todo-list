@@ -51,7 +51,7 @@ export default function Stats() {
 
     const stats = useMemo(() => {
         const total = todos.length;
-        const completed = todos.filter((t) => t.completed).length;
+        const completed = todos.filter((t) => t.isCompleted).length;
         const active = total - completed;
         const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
 

@@ -8,6 +8,7 @@ export interface ThemeColors {
   textMuted: string;
   border: string;
   primary: string;
+  secondary: string;
   success: string;
   danger: string;
   statusBarStyle: 'light' | 'dark';
@@ -20,6 +21,7 @@ export const lightColors: ThemeColors = {
   textMuted: '#6C757D',
   border: '#E9ECEF',
   primary: '#007AFF',
+  secondary: '#6C757D',
   success: '#28A745',
   danger: '#DC3545',
   statusBarStyle: 'dark',
@@ -32,6 +34,7 @@ export const darkColors: ThemeColors = {
   textMuted: '#A0A0A0',
   border: '#2C2C2C',
   primary: '#0A84FF',
+    secondary: '#8E8E93',
   success: '#30D158',
   danger: '#FF453A',
   statusBarStyle: 'light',

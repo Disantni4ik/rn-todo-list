@@ -1,3 +1,4 @@
+import { ThemeColors, useTheme } from "@/context/ThemeContext";
 import { StyleSheet, Text, View } from "react-native";
 
 interface HeaderProps {
@@ -6,11 +7,14 @@ interface HeaderProps {
 }
 
 export function Header({ totalCount, completedCount }: HeaderProps) {
+  const {colors} = useTheme()
+  const styles = CreateStyles(colors)
+
   return (
     <View style={styles.appHeader}>
       <View style={styles.headerTitleGroup}>
         <Text style={styles.headerIcon}>📝</Text>
-        <Text>Мій Список Завдань</Text>
+        <Text style={styles.headerTitle}>Мій Список Завдань</Text>
       </View>
       <Text style={styles.headerSubtitle}>
         {totalCount > 0
@@ -21,7 +25,7 @@ export function Header({ totalCount, completedCount }: HeaderProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const CreateStyles = (colors: ThemeColors) => StyleSheet.create({
   appHeader: {
     marginBottom: 24,
     textAlign: 'center'
@@ -36,8 +40,13 @@ const styles = StyleSheet.create({
   headerIcon: {
     fontSize: 24
   },
+  headerTitle: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: 700
+  },
   headerSubtitle: {
-    color: 'gray',
+    color: colors.textMuted,
     fontSize: 11,
     fontWeight: 400
   }

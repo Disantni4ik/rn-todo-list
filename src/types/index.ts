@@ -1,6 +1,8 @@
+import { Id } from "../../convex/_generated/dataModel";
+
 export interface Todo {
-  id: string;
+  _id: Id<'todos'>;
   text: string;
-  completed: boolean;
+  isCompleted: boolean;
   createdAt?: number;
 }

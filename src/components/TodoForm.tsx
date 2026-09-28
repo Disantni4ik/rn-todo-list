@@ -1,5 +1,5 @@
-import { Color } from "expo-router";
-import { useState, type FormEvent } from "react";
+import { ThemeColors, useTheme } from "@/context/ThemeContext";
+import { useState } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 interface TodoFormProps {
@@ -10,6 +10,9 @@ interface TodoFormProps {
 export function TodoForm({ onAdd, loading }: TodoFormProps) {
   const [text, setText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { colors } = useTheme();
+  const styles = CreateStyles(colors);
 
   const handleSubmit = async () => {
     const trimmed = text.trim();
@@ -30,6 +33,7 @@ export function TodoForm({ onAdd, loading }: TodoFormProps) {
       <TextInput
         style={styles.todoInput}
         placeholder="Що потрібно зробити?"
+        placeholderTextColor={colors.textMuted}
         value={text}
         onChangeText={setText}
         editable={!loading && !isSubmitting}
@@ -47,7 +51,7 @@ export function TodoForm({ onAdd, loading }: TodoFormProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const CreateStyles = (colors: ThemeColors) => StyleSheet.create({
   todoInput: {
     flex: 1,
     paddingHorizontal: 12,
@@ -55,7 +59,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'inherit',
     borderRadius: 12,
-    backgroundColor: '#f8fafc'
+    backgroundColor: colors.bg,
+    color: colors.text,
   },
   todoForm: {
     display: 'flex',
@@ -65,7 +70,7 @@ const styles = StyleSheet.create({
   todoAddBtn: {
     paddingHorizontal: 12,
     paddingVertical: 20,
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     fontWeight: '600',
     fontSize: 11,
