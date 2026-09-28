@@ -1,4 +1,4 @@
-import type { Todo } from '../types/types'
+import type { Todo } from '../types';
 
 const API_URL = "http://localhost:3000/todos";
 

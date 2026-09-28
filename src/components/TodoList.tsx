@@ -1,6 +1,5 @@
-import React from "react";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
-import type { Todo } from "../types/types";
+import type { Todo } from "../types";
 import { TodoItem } from "./TodoItem";
 
 interface TodoListProps {
