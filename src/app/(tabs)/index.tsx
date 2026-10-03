@@ -2,13 +2,13 @@ import { ThemeColors, useTheme } from "@/context/ThemeContext";
 import { useMutation, useQuery } from "convex/react";
 import { useMemo } from "react";
 import {
-	ActivityIndicator,
-	Alert,
-	KeyboardAvoidingView,
-	Platform,
-	StyleSheet,
-	Text,
-	View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -71,10 +71,11 @@ export default function Index() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <KeyboardAvoidingView
-        style={styles.container}
+        style={styles.keyboardContainer}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 12 : 0}
       >
         <View style={styles.card}>
           <Header
@@ -86,7 +87,9 @@ export default function Index() {
 
           {todos === undefined ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={colors.primary} />
+              <View style={styles.spinnerWrapper}>
+                <ActivityIndicator size="large" color={colors.primary} />
+              </View>
               <Text style={styles.loadingText}>Синхронізація з Convex...</Text>
             </View>
           ) : (
@@ -111,27 +114,28 @@ const createStyles = (colors: ThemeColors) =>
       flex: 1,
       backgroundColor: colors.bg,
     },
-    container: {
+    keyboardContainer: {
       flex: 1,
       paddingHorizontal: 16,
-      paddingVertical: 8,
+      paddingTop: 8,
+      paddingBottom: Platform.OS === "ios" ? 8 : 16,
     },
     card: {
       flex: 1,
-      backgroundColor: colors.surface,
-      borderRadius: 20,
-      overflow: "hidden",
+      backgroundColor: colors.card,
+      borderRadius: 24,
       borderWidth: 1,
       borderColor: colors.border,
+      overflow: "hidden",
       ...Platform.select({
         ios: {
           shadowColor: "#000000",
           shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: colors.statusBarStyle === "light" ? 0.25 : 0.06,
-          shadowRadius: 14,
+          shadowOpacity: colors.statusBarStyle === "light" ? 0.35 : 0.07,
+          shadowRadius: 16,
         },
         android: {
-          elevation: 3,
+          elevation: 4,
         },
       }),
     },
@@ -139,13 +143,22 @@ const createStyles = (colors: ThemeColors) =>
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
-      paddingVertical: 32,
-      gap: 10,
+      paddingHorizontal: 24,
+      gap: 14,
+    },
+    spinnerWrapper: {
+      width: 56,
+      height: 56,
+      borderRadius: 16,
+      backgroundColor: colors.inputBg,
+      justifyContent: "center",
+      alignItems: "center",
     },
     loadingText: {
       fontSize: 14,
       fontWeight: "500",
       color: colors.textMuted,
+      letterSpacing: 0.2,
     },
     listWrapper: {
       flex: 1,

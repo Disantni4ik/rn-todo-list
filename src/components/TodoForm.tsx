@@ -1,6 +1,14 @@
 import { ThemeColors, useTheme } from "@/context/ThemeContext";
-import { useState } from "react";
-import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 interface TodoFormProps {
   onAdd: (text: string) => Promise<void>;
@@ -12,7 +20,9 @@ export function TodoForm({ onAdd, loading }: TodoFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { colors } = useTheme();
-  const styles = CreateStyles(colors);
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const isDisabled = !text.trim() || loading || isSubmitting;
 
   const handleSubmit = async () => {
     const trimmed = text.trim();
@@ -22,7 +32,7 @@ export function TodoForm({ onAdd, loading }: TodoFormProps) {
       setIsSubmitting(true);
       await onAdd(trimmed);
       setText("");
-      Keyboard.dismiss()
+      Keyboard.dismiss();
     } finally {
       setIsSubmitting(false);
     }
@@ -38,41 +48,66 @@ export function TodoForm({ onAdd, loading }: TodoFormProps) {
         onChangeText={setText}
         editable={!loading && !isSubmitting}
         maxLength={120}
+        returnKeyType="done"
         onSubmitEditing={handleSubmit}
       />
       <Pressable
         onPress={handleSubmit}
-        style={styles.todoAddBtn}
-        disabled={!text.trim() || loading || isSubmitting}
+        style={({ pressed }) => [
+          styles.todoAddBtn,
+          isDisabled && styles.todoAddBtnDisabled,
+          pressed && !isDisabled && styles.todoAddBtnPressed,
+        ]}
+        disabled={isDisabled}
       >
-        <Text>{isSubmitting ? "Додаємо..." : "Додати"}</Text>
+        {isSubmitting ? (
+          <ActivityIndicator size="small" color="#FFFFFF" />
+        ) : (
+          <Text style={styles.todoAddBtnText}>Додати</Text>
+        )}
       </Pressable>
     </View>
   );
 }
 
-const CreateStyles = (colors: ThemeColors) => StyleSheet.create({
-  todoInput: {
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 16,
-    fontSize: 12,
-    fontFamily: 'inherit',
-    borderRadius: 12,
-    backgroundColor: colors.bg,
-    color: colors.text,
-  },
-  todoForm: {
-    display: 'flex',
-    gap: 10,
-    marginBottom: 24
-  },
-  todoAddBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 20,
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    fontWeight: '600',
-    fontSize: 11,
-  }
-})
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    todoForm: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    todoInput: {
+      flex: 1,
+      height: 48,
+      paddingHorizontal: 16,
+      fontSize: 15,
+      borderRadius: 14,
+      backgroundColor: colors.inputBg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      color: colors.text,
+    },
+    todoAddBtn: {
+      height: 48,
+      paddingHorizontal: 20,
+      backgroundColor: colors.primary,
+      borderRadius: 14,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    todoAddBtnDisabled: {
+      opacity: 0.5,
+    },
+    todoAddBtnPressed: {
+      opacity: 0.8,
+      transform: [{ scale: 0.98 }],
+    },
+    todoAddBtnText: {
+      color: "#FFFFFF",
+      fontSize: 14,
+      fontWeight: "700",
+    },
+  });

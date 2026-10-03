@@ -1,35 +1,82 @@
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import {
+  Authenticated,
+  AuthLoading,
+  ConvexReactClient,
+  Unauthenticated,
+} from "convex/react";
 import { Stack } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ActivityIndicator, View } from "react-native";
 
-// Створення клієнта Convex
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
-  unsavedChangesWarning: false, // Вимикаємо веб-попередження для React Native
+  unsavedChangesWarning: false,
 });
 
-function RootNavigator() {
-  const { isDarkMode } = useTheme();
+// Адаптер SecureStore для надійного збереження токенів на мобільному пристрої
+const secureStorage = {
+  getItem: SecureStore.getItemAsync,
+  setItem: SecureStore.setItemAsync,
+  removeItem: SecureStore.deleteItemAsync,
+};
+
+function RootNavigation() {
+  const { colors, isDarkMode } = useTheme();
 
   return (
     <>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-      </Stack>
+
+      {/* 1. Стан очікування перевірки сесії */}
+      <AuthLoading>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: colors.bg,
+          }}
+        >
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </AuthLoading>
+
+      {/* 2. Неавторизований стан: доступні тільки екрани входу та реєстрації */}
+      <Unauthenticated>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.bg },
+          }}
+        >
+          <Stack.Screen name="sign-in" />
+          <Stack.Screen name="sign-up" />
+        </Stack>
+      </Unauthenticated>
+
+      {/* 3. Авторизований стан: відкривається основний додаток з табами */}
+      <Authenticated>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.bg },
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </Authenticated>
     </>
   );
 }
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <ConvexProvider client={convex}>
-        <ThemeProvider>
-          <RootNavigator />
-        </ThemeProvider>
-      </ConvexProvider>
-    </SafeAreaProvider>
+    <ConvexAuthProvider client={convex} storage={secureStorage}>
+      <ThemeProvider>
+        <RootNavigation />
+      </ThemeProvider>
+    </ConvexAuthProvider>
   );
 }

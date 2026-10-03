@@ -1,17 +1,19 @@
 import { ThemeColors, useTheme } from "@/context/ThemeContext";
-import { Ionicons } from "@expo/vector-icons";
-import { useMutation } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useMutation, useQuery } from "convex/react";
+import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "../../../convex/_generated/api";
@@ -20,7 +22,27 @@ export default function SettingsScreen() {
   const { isDarkMode, toggleTheme, colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
+  const { signOut } = useAuthActions();
+  const router = useRouter();
+
   const [loadingAction, setLoadingAction] = useState<"completed" | "all" | null>(null);
+
+  // Якщо дані юзера та логаут підтягуються з хука аутентифікації:
+  const user = useQuery(api.users.currentUser)
+  // const user = { name: "Олександр", email: "alex@example.com" }; // підставте ваш useAuth / useQuery(api.users.current)
+  const handleSignOut = () => {
+    Alert.alert("Вихід з акаунта", "Ви впевнені, що хочете вийти з додатку?", [
+      { text: "Скасувати", style: "cancel" },
+      {
+        text: "Вийти",
+        style: "destructive",
+        onPress: async () => {
+          await signOut();
+          router.replace("/sign-in");
+        },
+      },
+    ]);
+  };
 
   const clearCompleted = useMutation(api.todos.clearCompleted);
   const clearAll = useMutation(api.todos.clearAll);
@@ -38,7 +60,8 @@ export default function SettingsScreen() {
             try {
               setLoadingAction("completed");
               const res = await clearCompleted();
-              Alert.alert("Успішно", `Видалено ${res.deletedCount} завдань`);
+              const count = res?.deletedCount ?? 0;
+              Alert.alert("Успішно", `Видалено ${count} завдань`);
             } catch (err: any) {
               Alert.alert("Помилка", err?.data || "Не вдалося очистити виконані завдання");
               console.error(err);
@@ -64,7 +87,8 @@ export default function SettingsScreen() {
             try {
               setLoadingAction("all");
               const res = await clearAll();
-              Alert.alert("Успішно", `Базу очищено. Видалено ${res.deletedCount} завдань`);
+              const count = res?.deletedCount ?? 0;
+              Alert.alert("Успішно", `Базу очищено. Видалено ${count} завдань`);
             } catch (err: any) {
               Alert.alert("Помилка", err?.data || "Не вдалося видалити завдання");
               console.error(err);
@@ -81,6 +105,32 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.screenTitle}>Налаштування</Text>
+
+        <View
+          style={[
+            styles.userCard,
+            { backgroundColor: colors.card ?? colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <View style={[styles.userAvatar, { backgroundColor: colors.primary }]}>
+            <MaterialIcons name="person" size={28} color="#FFFFFF" />
+          </View>
+          <View style={styles.userInfo}>
+            <Text style={[styles.userName, { color: colors.text }]}>
+              {user?.name ?? "Користувач"}
+            </Text>
+            <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
+              {user?.email ?? ""}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.signOutBtn}
+            onPress={handleSignOut}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <MaterialIcons name="logout" size={22} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.sectionHeader}>Зовнішній вигляд</Text>
         <View style={styles.card}>
@@ -245,6 +295,51 @@ const createStyles = (colors: ThemeColors) =>
       color: colors.text,
       marginBottom: 20,
     },
+    /* Додані відсутні стилі для блоку профілю */
+    userCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 16,
+      borderRadius: 16,
+      borderWidth: 1,
+      marginBottom: 24,
+      ...Platform.select({
+        ios: {
+          shadowColor: "#000000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 6,
+        },
+        android: {
+          elevation: 2,
+        },
+      }),
+    },
+    userAvatar: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    userInfo: {
+      flex: 1,
+      marginLeft: 14,
+    },
+    userName: {
+      fontSize: 17,
+      fontWeight: "700",
+    },
+    userEmail: {
+      fontSize: 13,
+      marginTop: 2,
+    },
+    signOutBtn: {
+      padding: 8,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    /* Секції та елементи меню */
     sectionHeader: {
       fontSize: 13,
       fontWeight: "600",
